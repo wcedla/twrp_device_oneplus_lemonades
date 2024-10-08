@@ -10,19 +10,6 @@ DEVICE_PATH := device/oneplus/lemonades
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
 
-# A/B
-AB_OTA_UPDATER := true
-AB_OTA_PARTITIONS += \
-    boot \
-    dtbo \
-    system \
-    system_ext \
-    product \
-    odm \
-    vendor \
-    vbmeta \
-    vbmeta_system
-
 BOARD_USES_RECOVERY_AS_BOOT := false
 
 # Architecture
@@ -30,15 +17,15 @@ TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-a
 TARGET_CPU_ABI := arm64-v8a
 TARGET_CPU_ABI2 := 
-TARGET_CPU_VARIANT := generic
-TARGET_CPU_VARIANT_RUNTIME := cortex-a75
+TARGET_CPU_VARIANT := kryo
+TARGET_CPU_VARIANT_RUNTIME := kryo585
 
 TARGET_2ND_ARCH := arm
 TARGET_2ND_ARCH_VARIANT := armv7-a-neon
 TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
-TARGET_2ND_CPU_VARIANT := generic
-TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a75
+TARGET_2ND_CPU_VARIANT := kryo
+TARGET_2ND_CPU_VARIANT_RUNTIME := kryo585
 
 ENABLE_CPUSETS := true
 ENABLE_SCHEDBOOST := true
@@ -47,6 +34,7 @@ ENABLE_SCHEDBOOST := true
 DEXPREOPT_GENERATE_APEX_IMAGE := true
 
 # Bootloader
+PRODUCT_PLATFORM := kona
 TARGET_BOOTLOADER_BOARD_NAME := kona
 TARGET_NO_BOOTLOADER := true
 TARGET_USES_UEFI := true
@@ -56,18 +44,23 @@ TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/system/etc/recovery.fstab
 
 # Kernel
 BOARD_KERNEL_CMDLINE := \
-    androidboot.console=ttyMSM0 \
+    console=ttyMSM0,115200n8 \
+    earlycon=msm_geni_serial,0xa90000 \
     androidboot.hardware=qcom \
+    androidboot.console=ttyMSM0 \
     androidboot.memcg=1 \
-    androidboot.usbcontroller=a600000.dwc3 \
-    androidboot.selinux=permissive \
-    firmware_class.path=/vendor/firmware_mnt/image \
     lpm_levels.sleep_disabled=1 \
+    video=vfb:640x400,bpp=32,memsize=3072000 \
     msm_rtb.filter=0x237 \
     service_locator.enable=1 \
+    androidboot.usbcontroller=a600000.dwc3 \
     swiotlb=2048 \
-    video=vfb:640x400,bpp=32,memsize=3072000
-
+    loop.max_part=7 \
+    cgroup.memory=nokmem,nosocket \
+    reboot=panic_warm \
+    kpti=off \
+    buildvariant=userdebug
+    
 BOARD_KERNEL_IMAGE_NAME := Image
 BOARD_KERNEL_PAGESIZE := 4096
 BOARD_BOOT_HEADER_VERSION := 2
@@ -97,8 +90,8 @@ BOARD_MKBOOTIMG_ARGS += --dtb $(TARGET_PREBUILT_DTB)
 BOARD_FLASH_BLOCK_SIZE := 262144
 BOARD_USES_PRODUCTIMAGE := true
 
-BOARD_BOOTIMAGE_PARTITION_SIZE := 104857600
-BOARD_RECOVERYIMAGE_PARTITION_SIZE := 104857600
+BOARD_BOOTIMAGE_PARTITION_SIZE := 100663296
+BOARD_RECOVERYIMAGE_PARTITION_SIZE := 134217728 
 BOARD_SYSTEMIMAGE_JOURNAL_SIZE := 0
 BOARD_SYSTEMIMAGE_EXTFS_INODE_COUNT := 4096
 TARGET_USERIMAGES_USE_EXT4 := true
@@ -107,20 +100,27 @@ TARGET_USERIMAGES_USE_F2FS := true
 BOARD_BUILD_SYSTEM_ROOT_IMAGE := false
 
 # Dynamic/Logical Partitions
-BOARD_SUPER_PARTITION_SIZE := 14000000000
+BOARD_SUPER_PARTITION_SIZE := 9932111872
 BOARD_SUPER_PARTITION_GROUPS := qti_dynamic_partitions
-BOARD_QTI_DYNAMIC_PARTITIONS_SIZE := 7516192768
+BOARD_QTI_DYNAMIC_PARTITIONS_SIZE := 9932111872
 BOARD_QTI_DYNAMIC_PARTITIONS_PARTITION_LIST := \
+    my_carrier \
+    my_engineering \
+    my_heytap \
+    my_manifest \
+    my_product \
+    my_region \
+    my_stock \
+    my_bigball \
+    odm \
+    product \
     system \
     system_ext \
-    vendor \
-    product \
-    odm
+    vendor
 
 # Platform
 TARGET_BOARD_PLATFORM := kona
 TARGET_BOARD_PLATFORM_GPU := qcom-adreno650
-TARGET_USES_HARDWARE_QCOM_BOOTCTRL := true
 QCOM_BOARD_PLATFORMS += kona
 
 # Props
@@ -138,26 +138,11 @@ BOARD_HAS_LARGE_FILESYSTEM := true
 BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_SUPPRESS_SECURE_ERASE := true
 TARGET_NO_RECOVERY := false
-TARGET_RECOVERY_DEVICE_MODULES += \
-    android.hidl.base@1.0 \
-    ashmemd \
-    ashmemd_aidl_interface-cpp \
-    bootctrl.$(TARGET_BOARD_PLATFORM).recovery \
-    libashmemd_client \
-    libcap \
-    libion \
-    libpcrecpp \
-    libxml2
 TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
-TARGET_USERIMAGES_USE_EXT4 := true
-TARGET_USERIMAGES_USE_F2FS := true
+
 
 # Use mke2fs to create ext4 images
 TARGET_USES_MKE2FS := true
-
-# Recovery Installer
-USE_RECOVERY_INSTALLER := true
-RECOVERY_INSTALLER_PATH := $(DEVICE_PATH)/installer
 
 #AVB
 BOARD_AVB_ENABLE := true
@@ -170,7 +155,7 @@ BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
 BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX_LOCATION := 1
 
 #Encryption
-PLATFORM_VERSION := 99.87.36
+PLATFORM_VERSION := 14
 PLATFORM_VERSION_LAST_STABLE := $(PLATFORM_VERSION)
 PLATFORM_SECURITY_PATCH := 2099-12-31
 VENDOR_SECURITY_PATCH := 2099-12-31
@@ -183,11 +168,12 @@ BOARD_USES_QCOM_FBE_DECRYPTION := true
 
 # TWRP Specific Build FLags
 TARGET_RECOVERY_QCOM_RTC_FIX := true
-TARGET_RECOVERY_PIXEL_FORMAT := BGRA_8888
+RECOVERY_SDCARD_ON_DATA := true
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.0/lun.%d/file
 TW_THEME := portrait_hdpi
 TW_BRIGHTNESS_PATH := "/sys/class/backlight/panel0-backlight/brightness"
-TW_DEFAULT_BRIGHTNESS := 2047
+TW_MAX_BRIGHTNESS := 4095
+TW_DEFAULT_BRIGHTNESS := 1879
 TW_Y_OFFSET := 104
 TW_H_OFFSET := -104
 TW_EXCLUDE_DEFAULT_USB_INIT := true
@@ -198,9 +184,12 @@ TW_BACKUP_EXCLUSIONS := \
 TW_EXCLUDE_TWRPAPP := true
 TW_INCLUDE_FASTBOOTD := true
 TW_EXTRA_LANGUAGES := true
+TW_DEFAULT_LANGUAGE := zh_CN
+TW_USE_TOOLBOX := true
 TW_HAS_EDL_MODE := true
 TW_INCLUDE_RESETPROP := true
 TW_INCLUDE_REPACKTOOLS := false
+TW_SUPPORT_INPUT_AIDL_HAPTICS :=true
 TW_INCLUDE_NTFS_3G := true
 TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_NO_SCREEN_BLANK := true
@@ -210,17 +199,6 @@ TW_NO_EXFAT_FUSE := true
 TW_FRAMERATE := 60
 TW_SYSTEM_BUILD_PROP_ADDITIONAL_PATHS := build.prop
 TW_OVERRIDE_SYSTEM_PROPS := "ro.build.fingerprint=ro.system.build.fingerprint"
-TW_RECOVERY_ADDITIONAL_RELINK_BINARY_FILES += \
-    $(TARGET_OUT_EXECUTABLES)/ashmemd \
-    $(TARGET_OUT_EXECUTABLES)/strace
-TW_RECOVERY_ADDITIONAL_RELINK_LIBRARY_FILES += \
-    $(TARGET_OUT_SHARED_LIBRARIES)/android.hidl.base@1.0.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/ashmemd_aidl_interface-cpp.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libashmemd_client.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libcap.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libion.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libpcrecpp.so \
-    $(TARGET_OUT_SHARED_LIBRARIES)/libxml2.so
     
 # TWRP Debug Flags
 TARGET_USES_LOGD := true
