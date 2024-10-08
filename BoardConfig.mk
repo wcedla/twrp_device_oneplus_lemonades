@@ -104,14 +104,6 @@ BOARD_SUPER_PARTITION_SIZE := 9932111872
 BOARD_SUPER_PARTITION_GROUPS := qti_dynamic_partitions
 BOARD_QTI_DYNAMIC_PARTITIONS_SIZE := 9932111872
 BOARD_QTI_DYNAMIC_PARTITIONS_PARTITION_LIST := \
-    my_carrier \
-    my_engineering \
-    my_heytap \
-    my_manifest \
-    my_product \
-    my_region \
-    my_stock \
-    my_bigball \
     odm \
     product \
     system \
