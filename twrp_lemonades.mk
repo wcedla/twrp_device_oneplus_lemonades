@@ -25,5 +25,5 @@ $(call inherit-product, device/oneplus/lemonades/device.mk)
 PRODUCT_DEVICE := lemonades
 PRODUCT_NAME := twrp_lemonades
 PRODUCT_BRAND := oneplus
-PRODUCT_MODEL := LE2101
+PRODUCT_MODEL := LE2100
 PRODUCT_MANUFACTURER := oneplus
