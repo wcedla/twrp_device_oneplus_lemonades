@@ -17,15 +17,15 @@ TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-a
 TARGET_CPU_ABI := arm64-v8a
 TARGET_CPU_ABI2 := 
-TARGET_CPU_VARIANT := kryo
-TARGET_CPU_VARIANT_RUNTIME := kryo585
+TARGET_CPU_VARIANT := generic
+TARGET_CPU_VARIANT_RUNTIME := cortex-a75
 
 TARGET_2ND_ARCH := arm
-TARGET_2ND_ARCH_VARIANT := armv8-a
+TARGET_2ND_ARCH_VARIANT := armv7-a-neon
 TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
-TARGET_2ND_CPU_VARIANT := kryo
-TARGET_2ND_CPU_VARIANT_RUNTIME := kryo585
+TARGET_2ND_CPU_VARIANT := generic
+TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a75
 
 ENABLE_CPUSETS := true
 ENABLE_SCHEDBOOST := true
@@ -34,7 +34,6 @@ ENABLE_SCHEDBOOST := true
 DEXPREOPT_GENERATE_APEX_IMAGE := true
 
 # Bootloader
-PRODUCT_PLATFORM := kona
 TARGET_BOOTLOADER_BOARD_NAME := kona
 TARGET_NO_BOOTLOADER := true
 TARGET_USES_UEFI := true
@@ -44,23 +43,18 @@ TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/system/etc/recovery.fstab
 
 # Kernel
 BOARD_KERNEL_CMDLINE := \
-    console=ttyMSM0,115200n8 \
-    earlycon=msm_geni_serial,0xa90000 \
-    androidboot.hardware=qcom \
     androidboot.console=ttyMSM0 \
+    androidboot.hardware=qcom \
     androidboot.memcg=1 \
+    androidboot.usbcontroller=a600000.dwc3 \
+    androidboot.selinux=permissive \
+    firmware_class.path=/vendor/firmware_mnt/image \
     lpm_levels.sleep_disabled=1 \
-    video=vfb:640x400,bpp=32,memsize=3072000 \
     msm_rtb.filter=0x237 \
     service_locator.enable=1 \
-    androidboot.usbcontroller=a600000.dwc3 \
     swiotlb=2048 \
-    loop.max_part=7 \
-    cgroup.memory=nokmem,nosocket \
-    reboot=panic_warm \
-    kpti=off \
-    buildvariant=userdebug
-    
+    video=vfb:640x400,bpp=32,memsize=3072000
+
 BOARD_KERNEL_IMAGE_NAME := Image
 BOARD_KERNEL_PAGESIZE := 4096
 BOARD_BOOT_HEADER_VERSION := 2
@@ -104,11 +98,11 @@ BOARD_SUPER_PARTITION_SIZE := 9932111872
 BOARD_SUPER_PARTITION_GROUPS := qti_dynamic_partitions
 BOARD_QTI_DYNAMIC_PARTITIONS_SIZE := 9932111872
 BOARD_QTI_DYNAMIC_PARTITIONS_PARTITION_LIST := \
-    odm \
-    product \
     system \
     system_ext \
-    vendor
+    vendor \
+    product \
+    odm
 
 # Platform
 TARGET_BOARD_PLATFORM := kona
@@ -130,8 +124,18 @@ BOARD_HAS_LARGE_FILESYSTEM := true
 BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_SUPPRESS_SECURE_ERASE := true
 TARGET_NO_RECOVERY := false
+TARGET_RECOVERY_DEVICE_MODULES += \
+    android.hidl.base@1.0 \
+    ashmemd \
+    ashmemd_aidl_interface-cpp \
+    libashmemd_client \
+    libcap \
+    libion \
+    libpcrecpp \
+    libxml2
 TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
-
+TARGET_USERIMAGES_USE_EXT4 := true
+TARGET_USERIMAGES_USE_F2FS := true
 
 # Use mke2fs to create ext4 images
 TARGET_USES_MKE2FS := true
@@ -145,7 +149,7 @@ BOARD_AVB_RECOVERY_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
 BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 1
 
 #Encryption
-PLATFORM_VERSION := 14
+PLATFORM_VERSION := 99.99.99
 PLATFORM_VERSION_LAST_STABLE := $(PLATFORM_VERSION)
 PLATFORM_SECURITY_PATCH := 2099-12-31
 VENDOR_SECURITY_PATCH := 2099-12-31
@@ -158,7 +162,7 @@ BOARD_USES_QCOM_FBE_DECRYPTION := true
 
 # TWRP Specific Build FLags
 TARGET_RECOVERY_QCOM_RTC_FIX := true
-RECOVERY_SDCARD_ON_DATA := true
+TARGET_RECOVERY_PIXEL_FORMAT := BGRA_8888
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.0/lun.%d/file
 TW_THEME := portrait_hdpi
 TW_BRIGHTNESS_PATH := "/sys/class/backlight/panel0-backlight/brightness"
@@ -174,12 +178,9 @@ TW_BACKUP_EXCLUSIONS := \
 TW_EXCLUDE_TWRPAPP := true
 TW_INCLUDE_FASTBOOTD := true
 TW_EXTRA_LANGUAGES := true
-TW_DEFAULT_LANGUAGE := zh_CN
-TW_USE_TOOLBOX := true
 TW_HAS_EDL_MODE := true
 TW_INCLUDE_RESETPROP := true
 TW_INCLUDE_REPACKTOOLS := false
-TW_SUPPORT_INPUT_AIDL_HAPTICS :=true
 TW_INCLUDE_NTFS_3G := true
 TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_NO_SCREEN_BLANK := true
@@ -189,6 +190,17 @@ TW_NO_EXFAT_FUSE := true
 TW_FRAMERATE := 60
 TW_SYSTEM_BUILD_PROP_ADDITIONAL_PATHS := build.prop
 TW_OVERRIDE_SYSTEM_PROPS := "ro.build.fingerprint=ro.system.build.fingerprint"
+TW_RECOVERY_ADDITIONAL_RELINK_BINARY_FILES += \
+    $(TARGET_OUT_EXECUTABLES)/ashmemd \
+    $(TARGET_OUT_EXECUTABLES)/strace
+TW_RECOVERY_ADDITIONAL_RELINK_LIBRARY_FILES += \
+    $(TARGET_OUT_SHARED_LIBRARIES)/android.hidl.base@1.0.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/ashmemd_aidl_interface-cpp.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libashmemd_client.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libcap.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libion.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libpcrecpp.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libxml2.so
     
 # TWRP Debug Flags
 TARGET_USES_LOGD := true
