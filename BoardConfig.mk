@@ -21,11 +21,13 @@ TARGET_CPU_VARIANT := generic
 TARGET_CPU_VARIANT_RUNTIME := cortex-a75
 
 TARGET_2ND_ARCH := arm
-TARGET_2ND_ARCH_VARIANT := armv7-a-neon
+TARGET_2ND_ARCH_VARIANT := armv8-a
 TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
 TARGET_2ND_CPU_VARIANT := generic
 TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a75
+
+TARGET_USES_64_BIT_BINDER := true
 
 ENABLE_CPUSETS := true
 ENABLE_SCHEDBOOST := true
@@ -34,8 +36,9 @@ ENABLE_SCHEDBOOST := true
 DEXPREOPT_GENERATE_APEX_IMAGE := true
 
 # Bootloader
+PRODUCT_PLATFORM := kona
 TARGET_BOOTLOADER_BOARD_NAME := kona
-TARGET_NO_BOOTLOADER := true
+TARGET_NO_BOOTLOADER := false
 TARGET_USES_UEFI := true
 
 # fstab
@@ -53,6 +56,9 @@ BOARD_KERNEL_CMDLINE := \
     msm_rtb.filter=0x237 \
     service_locator.enable=1 \
     swiotlb=2048 \
+    loop.max_part=7 \
+    cgroup.memory=nokmem,nosocket \
+    reboot=panic_warm \
     video=vfb:640x400,bpp=32,memsize=3072000
 
 BOARD_KERNEL_IMAGE_NAME := Image
@@ -84,6 +90,9 @@ BOARD_MKBOOTIMG_ARGS += --dtb $(TARGET_PREBUILT_DTB)
 BOARD_FLASH_BLOCK_SIZE := 262144
 BOARD_USES_PRODUCTIMAGE := true
 
+# Assert
+#TARGET_OTA_ASSERT_DEVICE := $(PRODUCT_RELEASE_NAME)
+
 BOARD_BOOTIMAGE_PARTITION_SIZE := 100663296
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 134217728 
 BOARD_SYSTEMIMAGE_JOURNAL_SIZE := 0
@@ -113,7 +122,7 @@ QCOM_BOARD_PLATFORMS += kona
 TARGET_SYSTEM_PROP +=$(DEVICE_PATH)/system.prop
 
 # Partitions (listed in the file) to be wiped under recovery.
-TARGET_RECOVERY_WIPE := $(DEVICE_PATH)/recovery.wipe
+#TARGET_RECOVERY_WIPE := $(DEVICE_PATH)/recovery.wipe
 
 # Workaround for error copying vendor files to recovery ramdisk
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := erofs
@@ -133,7 +142,7 @@ TARGET_RECOVERY_DEVICE_MODULES += \
     libion \
     libpcrecpp \
     libxml2
-TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
+#TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
 
@@ -157,30 +166,47 @@ TW_INCLUDE_CRYPTO := true
 TW_INCLUDE_CRYPTO_FBE := true
 TW_INCLUDE_FBE_METADATA_DECRYPT := true
 TW_USE_FSCRYPT_POLICY := 2
+
+# Network
+BUILD_BROKEN_USES_NETWORK := true
+
 BOARD_USES_METADATA_PARTITION := true
 BOARD_USES_QCOM_FBE_DECRYPTION := true
+
+# Vibrator
+#TW_SUPPORT_INPUT_AIDL_HAPTICS := true
+#TW_SUPPORT_INPUT_AIDL_HAPTICS_FIX_OFF := true
 
 # TWRP Specific Build FLags
 TARGET_RECOVERY_QCOM_RTC_FIX := true
 TARGET_RECOVERY_PIXEL_FORMAT := BGRA_8888
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.0/lun.%d/file
 TW_THEME := portrait_hdpi
-TW_BRIGHTNESS_PATH := "/sys/class/backlight/panel0-backlight/brightness"
+TW_CUSTOM_CPU_TEMP_PATH := "/sys/devices/virtual/thermal/thermal_zone45/temp"
+TW_BRIGHTNESS_PATH := "/sys/devices/platform/soc/ae00000.qcom,mdss_mdp/backlight/panel0-backlight/brightness"
 TW_MAX_BRIGHTNESS := 4095
 TW_DEFAULT_BRIGHTNESS := 1879
 TW_Y_OFFSET := 104
 TW_H_OFFSET := -104
 TW_EXCLUDE_DEFAULT_USB_INIT := true
 TW_EXCLUDE_ENCRYPTED_BACKUPS := false
+RECOVERY_SDCARD_ON_DATA := true
+TARGET_RECOVERY_QCOM_RTC_FIX := true
+TW_NO_EXFAT_FUSE := true
+TW_USE_TOOLBOX := true
 TW_BACKUP_EXCLUSIONS := \
    /data/fonts \
    /data/nandswap
 TW_EXCLUDE_TWRPAPP := true
 TW_INCLUDE_FASTBOOTD := true
 TW_EXTRA_LANGUAGES := true
+TW_DEFAULT_LANGUAGE := zh_CN
 TW_HAS_EDL_MODE := true
 TW_INCLUDE_RESETPROP := true
-TW_INCLUDE_REPACKTOOLS := false
+TW_INCLUDE_REPACKTOOLS := true
+TW_INCLUDE_LIBRESETPROP := true
+TW_INCLUDE_LPDUMP := true
+TW_INCLUDE_LPTOOLS := true
 TW_INCLUDE_NTFS_3G := true
 TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_NO_SCREEN_BLANK := true
